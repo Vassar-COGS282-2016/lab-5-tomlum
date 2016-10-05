@@ -34,14 +34,26 @@
 sample.training.data <- data.frame(x=c(0.5,0.6), y=c(0.4,0.3), category=c(1,2))
 
 exemplar.memory.limited <- function(training.data, x.val, y.val, target.category, sensitivity, decay.rate){
-  return(NA)
+  training.data$weight <- mapply(function(i){1*decay.rate^((length(training.data$x))-i)}, seq(1:(length(training.data$x))))
+
+  training.data$similarity <- mapply(function(x, y, weight){
+    distance = sqrt(((x+.001)-x.val)^2 + ((y+.001)-y.val)^2)
+    exp(-sensitivity*distance)*weight
+  }, training.data$x, training.data$y, training.data$weight)
+  
+  sum(subset(training.data, category==target.category)$similarity)/sum(training.data$similarity)
 }
+
+exemplar.memory.limited(sample.training.data, .5, .4, 1, .5, .8)
+exemplar.memory.limited(sample.training.data, .6, .3, 1, 10, .5)
 
 # Once you have the model implemented, write the log-likelihood function for a set of data.
 # The set of data for the model will look like this:
 
+
 sample.data.set <- data.frame(x=c(0.5,0.6,0.4,0.5,0.3), y=c(0.4,0.3,0.6,0.4,0.5), category=c(1,2,2,1,2), correct=c(T,F,F,T,F))
 
+exemplar.memory.limited(sample.data.set, .5, .4, 1, .5, .8)
 # In our hypothetical experiment, we are training and testing at the same time. This is important
 # for a model like this, because the model depends on the order in which examples are shown.
 # It also means that you have to do a little work to separate the training and test data for each trial.
@@ -51,7 +63,7 @@ sample.data.set[0:3,]
 
 # and the test item will be
 
-sample.data.set[4,]
+sample.data.set[4]
 
 # So, you need to treat each row of all.data as a test item, and find the training set for it
 # to give to your model. It may be easier to do this with a for loop than mapply(), though it
@@ -59,6 +71,23 @@ sample.data.set[4,]
 
 # Don't forget that decay rate should be between 0 and 1, and that sensitivity should be > 0.
 
+
 exemplar.memory.log.likelihood <- function(all.data, sensitivity, decay.rate){
-  return(NA)
+  
+    values <- c()
+    for(i in 1:length(all.data)){
+      current = all.data[i,]
+      
+      if(current$correct){
+        values[i] = exemplar.memory.limited(all.data[1:i,], current$x, current$y, current$category, sensitivity, decay.rate)+.001
+      }
+      else{
+        values[i] = 1-exemplar.memory.limited(all.data[1:i,], current$x, current$y, current$category, sensitivity, decay.rate)+.001
+      }
+    }
+    
+    -sum(log(values))
 }
+
+
+exemplar.memory.log.likelihood(sample.data.set, .5, .8)
