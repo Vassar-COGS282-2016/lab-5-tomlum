@@ -29,11 +29,11 @@ brent = optim(0, exemplar.memory.log.likelihood.optim.brent, upper=100, lower=0,
 # Brent - 8.9808
 
 # What's the AIC and BIC for both models? Which model should we prefer?
-NelderAIC = (4 - 2*log(7.9965))
-BrentAIC = (2 - 2*log(8.9808))
+NelderAIC = (4 - 2*(7.9965))
+BrentAIC = (2 - 2*(8.9808))
 
-NelderBIC = (2*log(nrow(sample.data.set)) - 2*log(7.9965))
-BrentBIC = (1*log(nrow(sample.data.set)) - 2*log(8.9808))
+NelderBIC = (2*log(nrow(sample.data.set)) - 2*(7.9965))
+BrentBIC = (1*log(nrow(sample.data.set)) - 2*(8.9808))
 
 # Brent is more preferred!
 
